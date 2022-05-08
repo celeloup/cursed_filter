@@ -9,18 +9,18 @@ let detections = [];
 let video;
 
 function setup() {
-	createCanvas(1920, 1080);
+	pixelDensity(1);
+	createCanvas(1024, 576);
 
 	video = createCapture(VIDEO);
-	video.size(1920, 1080);
 	video.hide();
-	
+
 	const faceOptions = { withLandmarks: true, withExpressions: false, withDescriptors: false };
 	faceapi = ml5.faceApi(video, faceOptions, faceReady);
-	
+
 	noFill();
 	stroke(255);
-	strokeWeight(10);
+	// strokeWeight(10);
 }
 
 function faceReady() {
@@ -30,7 +30,10 @@ function faceReady() {
 function gotFaces(error, result) {
 	if (error) {
 		// TODO: add better handling, it stops when it no longer detects
+		detections = null;
 		console.log(error);
+		// return;
+		faceReady();
 		return;
 	}
 	detections = result;
@@ -42,24 +45,30 @@ function draw() {
 	background(0, 255, 0);
 
 	// Original video
-	// image(video, 0, 0, width, width * video.height / video.width);
-	let value = video.height / video.width;
+	// image(video, 0, 0); //, width, width * video.height / video.width);
 
-	if (detections.landmarks) {
+	let eye_size = [100, 60];
+	let mouth_size = [130, 80];
+	let r_eye_loc = [500, 50];
+	let l_eye_loc = [150, 90];
+	let mouth_loc = [300, 250];
+
+	noStroke();
+	if (detections && detections.landmarks) {
 		// ------------------------------- RIGHT EYE
 		let rightEye = detections.parts.rightEye;
-		// rect(rightEye[0]._x - 20, rightEye[0]._y - 40, 120, 90);
-		image(video, 600, 50, 240, 160, (rightEye[0]._x + 165) * value, (rightEye[0]._y + 30) * value, 120 * value, 80 * value);
+		// rect(rightEye[0]._x - 20, rightEye[0]._y - 40, eye_size[0], eye_size[1]);
+		image(video, r_eye_loc[0], r_eye_loc[1], eye_size[0] * 2, eye_size[1] * 2, rightEye[0]._x - 20, rightEye[0]._y - 30, eye_size[0], eye_size[1]);
 
 		// // ---------------------------- LEFT EYE
 		let leftEye = detections.parts.leftEye;
-		// rect(leftEye[0]._x - 40, leftEye[0]._y - 40, 120, 90);
-		image(video, 100, 90, 240, 160, (leftEye[0]._x + 120) * value, (leftEye[0]._y + 30) * value, 120 * value, 80 * value);
+		// rect(leftEye[0]._x - 20, leftEye[0]._y - 40, eye_size[0], eye_size[1]);
+		image(video, l_eye_loc[0], l_eye_loc[1], eye_size[0] * 2, eye_size[1] * 2, leftEye[0]._x - 20, leftEye[0]._y - 30, eye_size[0], eye_size[1]);
 
 		// ------------------------------- MOUTH
 		let mouth = detections.parts.mouth;
-		// rect(mouth[0]._x - 20, mouth[0]._y - 40, 120, 90);
-		image(video, 300, 300, 320, 200, (mouth[0]._x + 140) * value, (mouth[0]._y + 70) * value, 160 * value, 100 * value);
+		// rect(mouth[0]._x - 20, mouth[0]._y - 40, mouth_size[0], mouth_size[1]);
+		image(video, mouth_loc[0], mouth_loc[1], mouth_size[0] * 2, mouth_size[1] * 2, mouth[0]._x - 20, mouth[0]._y - 30, mouth_size[0], mouth_size[1]);
 
 		// ------------------------------ DEBUG POINTS
 		// let points = detections.parts.mouth; //detections.landmarks.positions;
@@ -67,4 +76,33 @@ function draw() {
 		//   point(points[i]._x, points[i]._y);
 		// }
 	}
+	else {
+		fill(0);
+		noStroke();
+		rect(r_eye_loc[0], r_eye_loc[1], eye_size[0] * 2, eye_size[1] * 2);
+		rect(l_eye_loc[0], l_eye_loc[1], eye_size[0] * 2, eye_size[1] * 2);
+		rect(mouth_loc[0], mouth_loc[1], mouth_size[0] * 2, mouth_size[1] * 2);
+	}
+	window_border(r_eye_loc[0], r_eye_loc[1], eye_size[0] * 2, eye_size[1] * 2, "right_eye");
+	window_border(l_eye_loc[0], l_eye_loc[1], eye_size[0] * 2, eye_size[1] * 2, "left_eye");
+	window_border(mouth_loc[0], mouth_loc[1], mouth_size[0] * 2, mouth_size[1] * 2, "mouth_");
+}
+
+function window_border(x, y, width, height, name) {
+	noFill();
+	stroke(0, 255, 0);
+	strokeWeight(8);
+	rect(x, y, width, height, 0, 0, 8, 8);
+	fill(245);
+	noStroke();
+	rect(x + 4, y - 16, width - 8, 20, 5, 5, 0, 0);
+	fill(220);
+	circle(x + 15, y - 6, 11);
+	circle(x + 32, y - 6, 11);
+	circle(x + 49, y - 6, 11);
+	fill(180);
+	stroke(180);
+	strokeWeight(0.2);
+	textSize(14);
+	text(name, x + width / 2 - 20, y - 2);
 }
