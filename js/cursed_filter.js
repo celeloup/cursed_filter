@@ -3,24 +3,57 @@
 // using ml5 version of face-api : https://learn.ml5js.org/#/reference/face-api?id=face-api
 // and p5.js
 
+// TO USE ON OBS ADD  --use-fake-ui-for-media-stream to launch
+
 let faceapi;
 let detections = [];
 
 let video;
 
 function setup() {
+	navigator.mediaDevices.enumerateDevices()
+		.then(gotDevices);
 	pixelDensity(1);
 	createCanvas(1024, 576);
 
-	video = createCapture(VIDEO);
-	video.hide();
+	// video = createCapture(VIDEO);
+	// video.hide();
 
-	const faceOptions = { withLandmarks: true, withExpressions: false, withDescriptors: false };
-	faceapi = ml5.faceApi(video, faceOptions, faceReady);
+	// const faceOptions = { withLandmarks: true, withExpressions: false, withDescriptors: false };
+	// faceapi = ml5.faceApi(video, faceOptions, faceReady);
 
 	noFill();
 	stroke(255);
 	// strokeWeight(10);
+}
+
+const devices = [];
+
+function gotDevices(deviceInfos) {
+	for (let i = 0; i !== deviceInfos.length; ++i) {
+		const deviceInfo = deviceInfos[i];
+		if (deviceInfo.kind == 'videoinput') {
+			devices.push({
+				label: deviceInfo.label,
+				id: deviceInfo.deviceId
+			});
+		}
+	}
+	console.log(devices);
+	let supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+	console.log(supportedConstraints);
+	var constraints = {
+		video: {
+			deviceId: {
+				exact: devices[1].id
+			},
+		}
+	};
+	video = createCapture(constraints);
+	video.hide();
+
+	const faceOptions = { withLandmarks: true, withExpressions: false, withDescriptors: false };
+	faceapi = ml5.faceApi(video, faceOptions, faceReady);
 }
 
 function faceReady() {
