@@ -1,4 +1,3 @@
-// A JAVASCRIPT VERSION OF A CURSED FILTER
 // inspired by Jonty : https://twitter.com/jonty/status/1352727559235117058
 // using ml5 version of face-api : https://learn.ml5js.org/#/reference/face-api?id=face-api
 // and p5.js
